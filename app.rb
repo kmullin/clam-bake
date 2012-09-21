@@ -20,6 +20,11 @@ class ClamBake < Sinatra::Base
     erb :index
   end
 
+  get "/info" do
+    content_type :json
+    {"signatures" => @@clamav.signo}.to_json
+  end
+
   get "/virus_test" do
     send_file File.join(settings.public_folder, 'virus')
   end

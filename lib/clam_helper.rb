@@ -16,4 +16,8 @@ class ClamHelper
     @clamav.reload
   end
 
+  def signo
+    @clamav.signo
+  end
+
 end
