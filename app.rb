@@ -60,6 +60,9 @@ class ClamBake < Sinatra::Base
     rescue OpenURI::HTTPError => eie
       status eie.io.status[0]
       return
+    rescue Errno::ECONNREFUSED
+      status 500
+      return
     end
 
     is_virus = is_virus == 0 ? false : is_virus

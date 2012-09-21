@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/kmullin/clamav.git
-  revision: c9e1720eb155472e13f70a9c786502071b2d442b
+  revision: 8346ec0818cbc2a43117862c46046ccc1e3137a5
   specs:
     clamav (0.4.1)
 
