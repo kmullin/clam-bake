@@ -16,6 +16,23 @@ class ClamBake < Sinatra::Base
 
   @@clamav = ClamHelper.new
 
+  error do
+    content_type :json
+    status 400
+
+    e = env['sinatra.error']
+    case e
+    when Errno::ECONNRESET
+      status 500
+    when Errno::ECONNREFUSED
+      status 500
+    when OpenURI::HTTPError
+      status e.io.status[0]
+    end
+
+    {:result => e.class, :message => e.message}.to_json
+  end
+
   get "/" do
     erb :index
   end
@@ -36,38 +53,20 @@ class ClamBake < Sinatra::Base
   end
 
   post "/scan" do
-    bad_request = false
-    begin
-      url = URI.parse(params[:url])
-      bad_request = true unless url.scheme =~ /^http(s)?$/
-    rescue URI::InvalidURIError
-      bad_request = true
-    end
-
-    if bad_request
-      status 400
-      return
-    end
+    url = URI.parse(params[:url])
+    raise URI::InvalidURIError, 'invalid URL given' unless url.scheme =~ /^http(s)?$/
 
     is_virus = nil
-    begin
-      open(url.to_s) do |aws_f|
-        tmp_filename = File.basename(url.path)
-        tmp_file = Tempfile.new(tmp_filename)
-        begin
-          tmp_file.write(aws_f.read)
-          tmp_file.close
-        ensure
-          is_virus = @@clamav.scanfile(tmp_file.path)
-          tmp_file.unlink
-        end
+    open(url.to_s) do |aws_f|
+      tmp_filename = File.basename(url.path)
+      tmp_file = Tempfile.new(tmp_filename)
+      begin
+        tmp_file.write(aws_f.read)
+        tmp_file.close
+      ensure
+        is_virus = @@clamav.scanfile(tmp_file.path)
+        tmp_file.unlink
       end
-    rescue OpenURI::HTTPError => eie
-      status eie.io.status[0]
-      return
-    rescue Errno::ECONNREFUSED
-      status 500
-      return
     end
 
     is_virus = is_virus == 0 ? false : is_virus
