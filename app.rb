@@ -10,11 +10,13 @@ require 'clam_helper'
 
 class ClamBake < Sinatra::Base
 
+  configure do
+    @@clamav = ClamHelper.new
+  end
+
   configure :development do
     set :logging, true
   end
-
-  @@clamav = ClamHelper.new
 
   error do
     content_type :json
@@ -56,20 +58,7 @@ class ClamBake < Sinatra::Base
     url = URI.parse(params[:url])
     raise URI::InvalidURIError, 'invalid URL given' unless url.scheme =~ /^http(s)?$/
 
-    is_virus = nil
-    open(url.to_s) do |aws_f|
-      tmp_filename = File.basename(url.path)
-      tmp_file = Tempfile.new(tmp_filename)
-      begin
-        tmp_file.write(aws_f.read)
-        tmp_file.close
-      ensure
-        is_virus = @@clamav.scanfile(tmp_file.path)
-        tmp_file.unlink
-      end
-    end
-
-    is_virus = is_virus == 0 ? false : is_virus
+    is_virus = @@clamav.scan_url(url)
 
     content_type :json
     {"url" => url.to_s, "virus" => is_virus}.to_json
