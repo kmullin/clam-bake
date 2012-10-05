@@ -56,9 +56,11 @@ class ClamBake < Sinatra::Base
 
   post "/scan" do
     url = URI.parse(params[:url])
+    retries = params[:retry].to_i
+    retries = 1 if retries.zero?
     raise URI::InvalidURIError, 'invalid URL given' unless url.scheme =~ /^http(s)?$/
 
-    is_virus = @@clamav.scan_url(url)
+    is_virus = @@clamav.scan_url(url, retries)
 
     content_type :json
     {"url" => url.to_s, "virus" => is_virus}.to_json
