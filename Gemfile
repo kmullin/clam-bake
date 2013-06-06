@@ -1,8 +1,7 @@
-source :rubygems
+source "https://rubygems.org"
 
 gem 'clamav', :git => "git://github.com/kmullin/clamav.git"
 gem 'sinatra'
 
-group :development do
-  gem 'thin'
-end
+gem 'unicorn', :group => :production
+gem 'thin', :group => :development
