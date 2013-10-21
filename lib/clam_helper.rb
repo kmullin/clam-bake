@@ -1,4 +1,6 @@
 require 'clamav'
+require 'tempfile'
+require 'zlib'
 
 class ClamHelper
 
@@ -43,7 +45,8 @@ class ClamHelper
     is_virus = nil
 
     open(url.to_s) do |aws_f|
-      tmp_filename = File.basename(url.path)
+      # use a consistent hash for the filename, this fixes Errno::ENAMETOOLONG
+      tmp_filename = Zlib.crc32(File.basename(url.path)).to_s
       tmp_file = Tempfile.new(tmp_filename)
       begin
         tmp_file.write(aws_f.read)

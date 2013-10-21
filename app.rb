@@ -1,7 +1,6 @@
 # encoding: utf-8
 require 'sinatra/base'
 require 'open-uri'
-require 'tempfile'
 require 'json'
 
 $LOAD_PATH.unshift ENV['APP_ROOT'] || File.expand_path('..', __FILE__)
